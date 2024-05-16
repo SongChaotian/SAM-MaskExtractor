@@ -11,10 +11,7 @@ app = Flask(__name__)
 
 
 class SAM():
-    def __init__(self, device="cuda"):
-        checkpoint = "/pvc_user/songchaotian/projects/segment-anything/sam_vit_h_4b8939.pth"
-        model_type = "vit_h"
-        
+    def __init__(self, model_type="vit_h", checkpoint=None, device="cuda"):  
         self.sam = sam_model_registry[model_type](checkpoint=checkpoint)
         self.sam.to(device=device)
         self.configure_mask_generator()
@@ -111,7 +108,23 @@ class SAM():
         return data
 
 
-sam = SAM(device="cuda:0")
+checkpoint_path = "/pvc_user/songchaotian/projects/segment-anything/sam_vit_h_4b8939.pth"
+sam = SAM(model_type="vit_h", checkpoint=checkpoint_path, device="cuda:0")
+
+
+@app.route('/configure_mask_generator', methods=['POST'])
+def configure_mask_generator():
+    data = request.get_json()
+    
+    sam.configure_mask_generator(
+        points_per_side=data['points_per_side'] if "points_per_side" in data else 32, 
+        points_per_batch=data['points_per_batch'] if "points_per_batch" in data else 256, 
+        pred_iou_thresh=data['pred_iou_thresh'] if "pred_iou_thresh" in data else 0.85, 
+        stability_score_thresh=data['stability_score_thresh'] if "stability_score_thresh" in data else 0.9, 
+        crop_n_layers=data['crop_n_layers'] if "crop_n_layers" in data else 1, 
+        crop_n_points_downscale_factor=data['crop_n_points_downscale_factor'] if "crop_n_points_downscale_factor" in data else 2, 
+    )
+    return jsonify({"msg": "success"})
 
 @app.route('/get_mask_info', methods=['POST'])
 def get_mask_info():
