@@ -1,0 +1,9 @@
+# 忽略 Python 缓存文件夹
+__pycache__/
+
+# 忽略特定文件夹及其子文件夹中的 JPG 文件
+tgt_images/**/*.jpg
+frontend/images/**/*.jpg
+
+# 忽略 Node.js 依赖文件夹
+node_modules/
